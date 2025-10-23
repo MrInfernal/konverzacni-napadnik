@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { categories, Category } from '@/data';
-import { useQuestionHistory } from '@/hooks/useQuestionHistory';
-import HistoryControls from '@/components/HistoryControls';
 
 type Mode = 'menu' | 'random-mix' | 'multi-select' | 'single-category';
 type QuestionWithCategory = { question: string; category: Category; questionIndex: number };
@@ -10,16 +8,35 @@ export default function App() {
   const [mode, setMode] = useState<Mode>('menu');
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<QuestionWithCategory | null>(null);
-  const [usedQuestions, setUsedQuestions] = useState<Set<string>>(new Set());
-  const [showAllSeenModal, setShowAllSeenModal] = useState(false);
+  const [usedQuestions, setUsedQuestions] = useState<Set<string>>(() => {
+    // Load progress from localStorage on init
+    const saved = localStorage.getItem('usedQuestions');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+  const [showDisclaimer, setShowDisclaimer] = useState<boolean>(false);
 
-  // Question history management
-  const history = useQuestionHistory(categories);
+  // Check if disclaimer was already shown
+  useEffect(() => {
+    const disclaimerShown = localStorage.getItem('disclaimerShown');
+    if (!disclaimerShown) {
+      setShowDisclaimer(true);
+    }
+  }, []);
+
+  // Save progress to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('usedQuestions', JSON.stringify(Array.from(usedQuestions)));
+  }, [usedQuestions]);
+
+  const handleDisclaimerClose = () => {
+    localStorage.setItem('disclaimerShown', 'true');
+    setShowDisclaimer(false);
+  };
 
   const handleModeSelect = (selectedMode: Mode) => {
     setMode(selectedMode);
-    setUsedQuestions(new Set());
     setCurrentQuestion(null);
+    // Keep usedQuestions - progress is now persistent across sessions
 
     if (selectedMode === 'random-mix') {
       setSelectedCategories(categories);
@@ -43,39 +60,36 @@ export default function App() {
     setSelectedCategories([category]);
   };
 
+  // Get answered questions count for a specific category
+  const getAnsweredQuestionsCount = (categoryId: string): number => {
+    return Array.from(usedQuestions).filter(key => key.startsWith(`${categoryId}-`)).length;
+  };
+
   const getNextQuestion = () => {
     if (selectedCategories.length === 0) return;
 
-    // Get unseen questions from persistent history
-    const unseenQuestions = history.getUnseenQuestions(selectedCategories);
-
-    // If all questions seen, show modal
-    if (unseenQuestions.length === 0) {
-      setShowAllSeenModal(true);
-      return;
-    }
-
-    // Filter out questions used in current session
-    const availableQuestions = unseenQuestions.filter(q => {
-      const key = `${q.category.id}-${q.questionIndex}`;
-      return !usedQuestions.has(key);
+    const allQuestions: QuestionWithCategory[] = [];
+    selectedCategories.forEach(cat => {
+      cat.questions.forEach((q, idx) => {
+        allQuestions.push({ question: q, category: cat, questionIndex: idx });
+      });
     });
 
-    // If no questions available in current session, reset session
-    const questionsToUse = availableQuestions.length > 0 ? availableQuestions : unseenQuestions;
-
-    if (availableQuestions.length === 0) {
+    const totalQuestions = allQuestions.length;
+    if (usedQuestions.size >= totalQuestions) {
       setUsedQuestions(new Set());
     }
 
-    // Pick random question
-    const randomIndex = Math.floor(Math.random() * questionsToUse.length);
-    const nextQuestion = questionsToUse[randomIndex];
-    const questionKey = `${nextQuestion.category.id}-${nextQuestion.questionIndex}`;
+    let nextQuestion: QuestionWithCategory;
+    let questionKey: string;
 
-    // Mark as used in session and persistent history
+    do {
+      const randomIndex = Math.floor(Math.random() * totalQuestions);
+      nextQuestion = allQuestions[randomIndex];
+      questionKey = `${nextQuestion.category.id}-${nextQuestion.questionIndex}`;
+    } while (usedQuestions.has(questionKey) && usedQuestions.size < totalQuestions);
+
     setUsedQuestions(prev => new Set([...prev, questionKey]));
-    history.markQuestionAsSeen(nextQuestion.category.id, nextQuestion.questionIndex);
     setCurrentQuestion(nextQuestion);
   };
 
@@ -88,40 +102,61 @@ export default function App() {
 
   const handleBack = () => {
     if (mode === 'multi-select' && selectedCategories.length > 0 && currentQuestion) {
+      // Going back from questions to category selection - keep progress
       setCurrentQuestion(null);
-      setUsedQuestions(new Set());
     } else {
+      // Going back to main menu - keep progress (now persisted in localStorage)
       setMode('menu');
       setSelectedCategories([]);
       setCurrentQuestion(null);
-      setUsedQuestions(new Set());
+      // Don't reset usedQuestions - progress is now persistent
     }
+  };
+
+  // Disclaimer Modal
+  const DisclaimerModal = () => {
+    if (!showDisclaimer) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8 relative">
+          <div className="text-center mb-6">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">
+              Experimentální Aplikace
+            </h2>
+          </div>
+          <div className="text-slate-700 space-y-4 mb-8">
+            <p className="text-lg">
+              Tato aplikace je ve fázi <strong>experimentálního vývoje</strong>.
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-left">
+              <li>Některé otázky mohou být formulovány nepřesně nebo obsahovat chyby</li>
+              <li>Aplikace slouží primárně pro testování a zpětnou vazbu</li>
+              <li>Očekáváme vaše náměty na vylepšení</li>
+            </ul>
+            <p className="text-sm text-slate-500 mt-4">
+              Děkujeme za pochopení a těšíme se na vaše podněty! 🙏
+            </p>
+          </div>
+          <button
+            onClick={handleDisclaimerClose}
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-8 rounded-full font-bold text-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg"
+          >
+            Rozumím, pokračovat →
+          </button>
+        </div>
+      </div>
+    );
   };
 
   // Main menu - mode selection
   if (mode === 'menu') {
-    const stats = history.getStats();
-
-    const handleExport = () => {
-      const json = history.exportHistory();
-      navigator.clipboard.writeText(json);
-    };
-
-    const handleImport = () => {
-      const json = prompt('Vložte JSON historii:');
-      if (json) {
-        const success = history.importHistory(json);
-        if (success) {
-          alert('Historie byla úspěšně importována!');
-        } else {
-          alert('Chyba při importu historie. Zkontrolujte formát.');
-        }
-      }
-    };
-
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8 flex items-center justify-center">
-        <div className="max-w-4xl mx-auto">
+      <>
+        <DisclaimerModal />
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8 flex items-center justify-center">
+          <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-5xl font-bold text-white mb-4">
               Konverzační Nápadník
@@ -129,17 +164,6 @@ export default function App() {
             <p className="text-xl text-slate-300">
               Vyberte režim zobrazování otázek
             </p>
-          </div>
-
-          {/* History Controls */}
-          <div className="mb-8">
-            <HistoryControls
-              stats={stats}
-              onReset={history.resetHistory}
-              onExport={handleExport}
-              onImport={handleImport}
-              onDismissNewQuestions={history.dismissNewQuestionsNotification}
-            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -176,8 +200,13 @@ export default function App() {
               </p>
             </button>
           </div>
+
+          <div className="text-center mt-12 text-slate-400 text-sm">
+            <p>Verze 1.0.0 (Vite) • Experimentální</p>
+          </div>
         </div>
       </div>
+      </>
     );
   }
 
@@ -205,6 +234,10 @@ export default function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {categories.map((category) => {
               const isSelected = selectedCategories.find(c => c.id === category.id);
+              const answeredCount = getAnsweredQuestionsCount(category.id);
+              const totalCount = category.questions.length;
+              const progressPercent = totalCount > 0 ? Math.round((answeredCount / totalCount) * 100) : 0;
+
               return (
                 <button
                   key={category.id}
@@ -218,9 +251,25 @@ export default function App() {
                   )}
                   <h2 className="text-2xl font-bold mb-2">{category.name}</h2>
                   <p className="text-sm opacity-90">{category.description}</p>
-                  <p className="mt-4 text-xs opacity-75">
-                    {category.questions.length} otázek
-                  </p>
+                  <div className="mt-4 space-y-2">
+                    <p className="text-xs opacity-75">
+                      {category.questions.length} otázek
+                    </p>
+                    {answeredCount > 0 && (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span>Zodpovězeno: {answeredCount}/{totalCount}</span>
+                          <span>{progressPercent}%</span>
+                        </div>
+                        <div className="w-full bg-white/20 rounded-full h-1.5">
+                          <div
+                            className="bg-white rounded-full h-1.5 transition-all duration-300"
+                            style={{ width: `${progressPercent}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </button>
               );
             })}
@@ -260,19 +309,41 @@ export default function App() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => handleSingleCategorySelect(category)}
-                className={`${category.color} p-6 rounded-2xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-200 text-white`}
-              >
-                <h2 className="text-2xl font-bold mb-2">{category.name}</h2>
-                <p className="text-sm opacity-90">{category.description}</p>
-                <p className="mt-4 text-xs opacity-75">
-                  {category.questions.length} otázek
-                </p>
-              </button>
-            ))}
+            {categories.map((category) => {
+              const answeredCount = getAnsweredQuestionsCount(category.id);
+              const totalCount = category.questions.length;
+              const progressPercent = totalCount > 0 ? Math.round((answeredCount / totalCount) * 100) : 0;
+
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => handleSingleCategorySelect(category)}
+                  className={`${category.color} p-6 rounded-2xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-200 text-white`}
+                >
+                  <h2 className="text-2xl font-bold mb-2">{category.name}</h2>
+                  <p className="text-sm opacity-90">{category.description}</p>
+                  <div className="mt-4 space-y-2">
+                    <p className="text-xs opacity-75">
+                      {category.questions.length} otázek
+                    </p>
+                    {answeredCount > 0 && (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span>Zodpovězeno: {answeredCount}/{totalCount}</span>
+                          <span>{progressPercent}%</span>
+                        </div>
+                        <div className="w-full bg-white/20 rounded-full h-1.5">
+                          <div
+                            className="bg-white rounded-full h-1.5 transition-all duration-300"
+                            style={{ width: `${progressPercent}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -329,47 +400,6 @@ export default function App() {
             Další otázka →
           </button>
         </div>
-
-        {/* All questions seen modal */}
-        {showAllSeenModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white rounded-3xl p-8 max-w-md mx-4 shadow-2xl">
-              <div className="text-center">
-                <div className="text-6xl mb-4">🎉</div>
-                <h2 className="text-3xl font-bold text-purple-900 mb-4">
-                  Gratuluji!
-                </h2>
-                <p className="text-lg text-slate-700 mb-6">
-                  Viděl/a jste všechny otázky z vybraných kategorií!
-                  <br />
-                  Chcete začít znovu?
-                </p>
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => {
-                      history.resetHistory();
-                      setShowAllSeenModal(false);
-                      setUsedQuestions(new Set());
-                      getNextQuestion();
-                    }}
-                    className="flex-1 bg-purple-600 text-white py-3 px-6 rounded-full font-bold hover:bg-purple-700 transition-colors"
-                  >
-                    ✅ Resetovat a pokračovat
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowAllSeenModal(false);
-                      handleBack();
-                    }}
-                    className="flex-1 bg-slate-200 text-slate-700 py-3 px-6 rounded-full font-bold hover:bg-slate-300 transition-colors"
-                  >
-                    ❌ Zpět na menu
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

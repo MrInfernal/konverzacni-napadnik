@@ -1,485 +1,205 @@
-# 📋 CONTINUE.md - Pokračování vývoje aplikace
+# Konverzační Nápadník - Development Log
 
-Tento dokument obsahuje kompletní přehled aplikace "Konverzační Nápadník" pro pokračování vývoje.
+## Aktuální stav projektu (23.10.2025)
 
-**Datum poslední aktualizace:** 2025-10-23
-**Verze aplikace:** 2.0 (Vite migration + History tracking)
-**Repository:** https://github.com/MrInfernal/konverzacni-napadnik.git
-**Live URL:** [Vercel deployment]
+### Verze: 1.0.0 (Vite) - Experimentální
 
 ---
 
-## 📊 Aktuální stav projektu
+## Poslední dokončené úpravy
 
-### ✅ Hotové milníky:
+### 1. Progress Counter u kategorií 📊
+**Implementováno:** 23.10.2025
 
-#### Milestone 1: Základní funkcionalita
-- Next.js aplikace s 11 kategoriemi otázek
-- 3 režimy zobrazování (Náhodný Mix, Vlastní Výběr, Jedna Kategorie)
-- Základní UI s Tailwind CSS
-- ~2,141 otázek v češtině
+- Každá kategorie nyní zobrazuje počet zodpovězených otázek
+- Formát zobrazení: "Zodpovězeno: X/Y" + procentuální progress "Z%"
+- Vizuální progress bar (bílá lišta na barevném pozadí)
+- Zobrazuje se pouze u kategorií s alespoň 1 zodpovězenou otázkou
+- Funguje ve všech třech režimech:
+  - Náhodný Mix
+  - Vlastní Výběr
+  - Jedna Kategorie
 
-#### Milestone 2: Rozšíření otázek
-- Vylepšení českých překladů
-- Rozšíření na 2,200+ otázek
-- Aktualizace kategorií (fears +15, future +21)
-
-#### Milestone 3: Vite migrace ⚡
-- **Nahrazení Next.js za Vite 5**
-- **Snížení node_modules: 425 MB → 66 MB (84% ↓)**
-- **Build čas: ~5s → ~2s (60% ↓)**
-- **Bundle size: ~3 MB → 304 KB (90% ↓)**
-- Nahrazení Tailwind CSS za vanilla CSS (4.59 KB)
-- 100% zachování funkčnosti
-
-#### Milestone 4: Persistent History 💾
-- **Trvalé sledování viděných otázek v localStorage**
-- **Nikdy se nezobrazí stejná otázka dvakrát**
-- Smart detekce nových otázek po updatech (hash-based)
-- Progress tracking (X/2,227 otázek viděno)
-- Export/Import historie
-- Manuální reset s potvrzením
-- Modal při vyčerpání všech otázek
+**Soubory upraveny:**
+- `src/App.tsx` (řádky 11-29, 54-57, 226-266, 302-336)
 
 ---
 
-## 🏗️ Technická architektura
+### 2. Experimentální Disclaimer Modal ⚠️
+**Implementováno:** 23.10.2025
 
-### Stack:
-- **Framework:** Vite 5 + React 19 + TypeScript
-- **Styling:** Vanilla CSS (7.88 KB)
-- **Build:** ESBuild (ultra rychlý)
-- **Deployment:** Vercel (automatický)
-- **Storage:** localStorage pro historii
+- Modal se zobrazuje při prvním otevření aplikace
+- Informuje uživatele o experimentální povaze aplikace
+- Upozorňuje na možné nepřesnosti ve formulaci otázek
+- Po zavření se již nezobrazuje (uloženo v localStorage)
+- Moderní design s rozmazaným pozadím (backdrop-blur)
 
-### Struktura projektu:
+**Obsah disclaimeru:**
+- "Tato aplikace je ve fázi experimentálního vývoje"
+- Upozornění na možné chyby v otázkách
+- Poděkování za pochopení a zpětnou vazbu
+
+**Soubory upraveny:**
+- `src/App.tsx` (řádky 16-34, 116-141, 147)
+
+---
+
+### 3. Informace o verzi v patičce ℹ️
+**Implementováno:** 23.10.2025
+
+- V hlavním menu se zobrazuje: "Verze 1.0.0 (Vite) • Experimentální"
+- Umístěno v patičce, neruší hlavní UI
+- Jasně označuje platformu (Vite) a status (Experimentální)
+
+**Soubory upraveny:**
+- `src/App.tsx` (řádky 194-196)
+
+---
+
+### 4. Perzistence pokroku (localStorage) 💾
+**Implementováno:** 23.10.2025
+
+- Progress otázek se automaticky ukládá do localStorage
+- Po zavření a znovuotevření aplikace se zachovává
+- Funguje napříč všemi režimy
+- Implementováno pomocí React useEffect hooks
+
+**Technické detaily:**
+- `usedQuestions` state inicializován z localStorage
+- Automatické ukládání při každé změně
+- Klíč v localStorage: `usedQuestions`
+- Formát: JSON array stringů (např. `["relationships-44", "career-12"]`)
+
+**Soubory upraveny:**
+- `src/App.tsx` (řádky 11-29, 36-46, 103-114)
+
+---
+
+## Technické informace
+
+### Build metriky
 ```
-question-app/
-├── src/
-│   ├── App.tsx                    # Hlavní komponenta (377 řádků)
-│   ├── main.tsx                   # React entry point
-│   ├── styles.css                 # Všechny styly (721 řádků)
-│   ├── components/
-│   │   └── HistoryControls.tsx   # UI pro historii otázek
-│   ├── hooks/
-│   │   └── useQuestionHistory.ts # localStorage management
-│   ├── utils/
-│   │   └── hashHelper.ts         # Detekce změn v otázkách
-│   └── data/                     # 11 kategorií otázek
-│       ├── index.ts              # Export všech kategorií
-│       ├── relationships.ts      # 199 otázek
-│       ├── career.ts             # 191 otázek
-│       ├── dreams.ts             # 223 otázek
-│       ├── childhood.ts          # 192 otázek
-│       ├── fears.ts              # 215 otázek
-│       ├── values.ts             # 199 otázek
-│       ├── identity.ts           # 199 otázek
-│       ├── creativity.ts         # 141 otázek
-│       ├── happiness.ts          # 199 otázek
-│       ├── philosophy.ts         # 199 otázek
-│       └── future.ts             # 220 otázek
-├── index.html                    # HTML entry
-├── vite.config.ts               # Vite konfigurace
-├── vercel.json                  # Vercel SPA config
-├── package.json                 # 65 packages
-├── question-app-nextjs/         # Záloha Next.js verze
-└── question-app-vite/           # Původní Vite složka
+dist/index.html                   0.48 kB │ gzip:  0.32 kB
+dist/assets/index-6PhdJwlI.css    4.59 kB │ gzip:  1.52 kB
+dist/assets/index-DLAPO71-.js   313.48 kB │ gzip: 98.93 kB
 ```
 
-### Klíčové soubory:
+**Build čas:** ~1.8s
+**Celková velikost (gzip):** ~101 KB
 
-**App.tsx** - Hlavní logika aplikace
-- State management pro režimy a otázky
-- Integrace useQuestionHistory hook
-- 3 režimy zobrazování
-- Modal pro vyčerpání otázek
-
-**useQuestionHistory.ts** - Správa historie
-- `loadHistory()` - Načte z localStorage
-- `markQuestionAsSeen()` - Označí otázku jako viděnou
-- `getUnseenQuestions()` - Vrátí neviděné otázky
-- `resetHistory()` - Vymaže historii
-- `getStats()` - Statistiky
-- Hash-based detekce změn
-
-**HistoryControls.tsx** - UI komponenta
-- Progress bar
-- Statistiky (viděno/celkem/zbývá)
-- Tlačítko reset
-- Export/Import funkce
-- Notifikace o nových otázkách
+### Použité technologie
+- React 19.0.0
+- TypeScript 5.6.3
+- Vite 5.4.21
+- Vanilla CSS (bez frameworků)
 
 ---
 
-## 📦 Aktuální statistiky
+## Struktura dat v localStorage
 
-**Celkem otázek:** 2,227 (napříč 11 kategoriemi)
-**Bundle size:** 306 KB (~94 KB gzip)
-**CSS:** 7.88 KB (2.29 KB gzip)
-**Build čas:** ~2 sekundy
-**node_modules:** 66 MB
-**Dependencies:** 65 packages
-
----
-
-## 🚀 Jak začít pracovat
-
-### 1. Klonování a instalace:
-```bash
-git clone https://github.com/MrInfernal/konverzacni-napadnik.git
-cd question-app
-npm install  # ~66 MB, rychlé
-```
-
-### 2. Development:
-```bash
-npm run dev     # Spustí Vite dev server na http://localhost:5173
-npm run build   # Produkční build (~2 sekundy)
-npm run preview # Preview produkčního buildu
-```
-
-### 3. Git workflow:
-```bash
-git status              # Zkontrolovat změny
-git add .              # Stage změny
-git commit -m "..."    # Commit
-git push               # Push na GitHub → automatický Vercel deployment
-```
-
-### 4. Testování v prohlížeči:
-- Otevřít http://localhost:5173
-- Zkontrolovat localStorage: DevTools → Application → Local Storage
-- Klíč: `konverzacni-napadnik-history`
-
----
-
-## 💡 Nápady pro další vývoj
-
-### Priority 1 - Quick Wins (1-2 hodiny):
-
-#### 1.1 Dark Mode 🌙
-**Proč:** Moderní aplikace, uživatelsky přívětivé
-**Implementace:**
-- Přidat toggle tlačítko do menu
-- CSS variables pro barvy
-- Uložit preference do localStorage
-- Odhadovaný čas: 1-2 hodiny
-
-#### 1.2 Keyboard Shortcuts ⌨️
-**Proč:** Rychlejší navigace pro power users
-**Shortcuts:**
-- `Space` - Další otázka
-- `Escape` - Zpět
-- `R` - Resetovat historii
-- `?` - Zobrazit nápovědu
-- Odhadovaný čas: 1 hodina
-
-#### 1.3 Sdílení otázek 🔗
-**Proč:** Uživatelé mohou sdílet zajímavé otázky
-**Implementace:**
-- Tlačítko "Sdílet" u každé otázky
-- Copy to clipboard
-- Možnost sdílet na sociální sítě
-- Odhadovaný čas: 1-2 hodiny
-
----
-
-### Priority 2 - Střední features (3-5 hodin):
-
-#### 2.1 Oblíbené otázky ⭐
-**Proč:** Uživatelé si mohou označit zajímavé otázky
-**Implementace:**
-- Tlačítko "Přidat do oblíbených"
-- Seznam oblíbených v menu
-- Filtr "Pouze oblíbené"
-- localStorage: `favorites` array
-- Odhadovaný čas: 3-4 hodiny
-
-#### 2.2 Statistiky a achievements 🏆
-**Proč:** Gamifikace, motivace projít všechny otázky
-**Features:**
-- Počet otázek za den/týden/měsíc
-- Nejaktivnější kategorie
-- Série (streak) - X dní po sobě
-- Odznaky (100 otázek, 500 otázek, atd.)
-- Grafy progress over time
-- Odhadovaný čas: 4-5 hodin
-
-#### 2.3 Multijazyčnost 🌍
-**Proč:** Rozšíření pro mezinárodní publikum
-**Implementace:**
-- i18n knihovna (react-i18next)
-- Angličtina jako druhý jazyk
-- Language switcher v menu
-- Překlad UI + otázek
-- Odhadovaný čas: 5-8 hodin (záleží na kvalitě překladů)
-
----
-
-### Priority 3 - Velké features (1-2 dny):
-
-#### 3.1 Backend + Databáze 🗄️
-**Proč:** Synchronizace mezi zařízeními, lepší analytics
-**Stack návrh:**
-- Firebase (nejjednodušší) nebo Supabase
-- User authentication (Google, Email)
-- Sync historie mezi zařízeními
-- Cloud backup
-- Odhadovaný čas: 1-2 dny
-
-#### 3.2 Tematické kolekce 📚
-**Proč:** Kurátorované sady otázek pro specifické situace
-**Příklady:**
-- "První rande" (30 otázek)
-- "Dlouhá cesta autem" (50 otázek)
-- "Rodinná večeře" (40 otázek)
-- "Hluboké poznání" (60 otázek)
-- Odhadovaný čas: 1 den (+ čas na kurátorství)
-
-#### 3.3 Komunitní funkce 👥
-**Proč:** User-generated content, růst databáze
-**Features:**
-- Uživatelé mohou přidávat vlastní otázky
-- Hodnocení otázek (upvote/downvote)
-- Moderace obsahu
-- Veřejné vs. soukromé otázky
-- Odhadovaný čas: 2-3 dny
-
----
-
-## 🔧 Technické poznámky
-
-### localStorage struktura:
+### `disclaimerShown`
 ```json
-{
-  "konverzacni-napadnik-history": {
-    "seenQuestions": {
-      "relationships-0": 1234567890,
-      "career-5": 1234567891,
-      ...
-    },
-    "questionHashes": {
-      "relationships": "abc123",
-      "career": "def456",
-      ...
-    },
-    "stats": {
-      "totalSeen": 145,
-      "lastReset": 1234567890,
-      "sessionCount": 5
-    }
-  }
-}
+"true"
 ```
+Indikuje, že disclaimer byl zobrazen a zavřen.
 
-### Jak funguje detekce nových otázek:
-1. Při načtení aplikace se spočítá hash každé kategorie
-2. Hash = kombinace všech otázek v kategorii
-3. Porovnání s uloženým hashem v localStorage
-4. Pokud se hash liší = nové/změněné otázky
-5. Notifikace uživateli
-
-### Přidání nových otázek:
-```typescript
-// src/data/novakategorie.ts
-export const novaKategorie = [
-  "Otázka 1?",
-  "Otázka 2?",
-  ...
-];
-
-// src/data/index.ts
-import { novaKategorie } from './novakategorie';
-
-export const categories: Category[] = [
-  ...
-  {
-    id: 'nova-kategorie',
-    name: 'Nová Kategorie',
-    description: 'Popis kategorie',
-    questions: novaKategorie,
-    color: 'bg-cyan-500'
-  }
-];
+### `usedQuestions`
+```json
+["relationships-44", "career-12", "dreams-89", ...]
 ```
-
-### Dostupné barvy pro kategorie:
-```
-bg-pink-500, bg-blue-500, bg-purple-500, bg-yellow-500,
-bg-red-500, bg-green-500, bg-indigo-500, bg-orange-500,
-bg-amber-500, bg-slate-500, bg-teal-500, bg-cyan-500
-```
+Array ID zodpovězených otázek ve formátu `{categoryId}-{questionIndex}`.
 
 ---
 
-## 🐛 Troubleshooting
+## Další možná vylepšení (TODO)
 
-### Build selhává:
-```bash
-# Smazat node_modules a cache
-rm -rf node_modules dist .vite
-npm install
-npm run build
-```
+### Vysoká priorita
+- [ ] Tlačítko pro reset pokroku (smazání localStorage)
+- [ ] Export pokroku do souboru
+- [ ] Import pokroku ze souboru
 
-### TypeScript chyby:
-```bash
-# Zkontrolovat typy
-npx tsc --noEmit
+### Střední priorita
+- [ ] Statistiky (celkový počet zodpovězených otázek, nejaktivnější kategorie)
+- [ ] Dark/Light mode toggle
+- [ ] Historie zobrazených otázek (možnost vrátit se zpět)
+- [ ] Oblíbené otázky (označení a seznam)
 
-# Často pomůže restart TS serveru ve VS Code:
-# Ctrl+Shift+P → "TypeScript: Restart TS Server"
-```
-
-### localStorage issues:
-```javascript
-// V browser console:
-localStorage.getItem('konverzacni-napadnik-history')  // Zobrazit
-localStorage.removeItem('konverzacni-napadnik-history')  // Smazat
-localStorage.clear()  // Smazat vše
-```
-
-### Vercel deployment selhává:
-1. Zkontrolovat `vercel.json` konfiguraci
-2. Ověřit že `package.json` má správné scripty
-3. Zkontrolovat build logy ve Vercel dashboard
-4. Framework preset musí být `null` (ne Next.js!)
-
-### Hot reload nefunguje:
-```bash
-# Restartovat dev server
-# Ctrl+C → npm run dev
-
-# Nebo vyčistit cache:
-rm -rf .vite node_modules/.vite
-npm run dev
-```
+### Nízká priorita
+- [ ] PWA podpora (offline režim)
+- [ ] Animace přechodů mezi otázkami
+- [ ] Zvukové efekty
+- [ ] Timer/Pomodoro režim
+- [ ] Sdílení konkrétní otázky (share link)
 
 ---
 
-## 📚 Užitečné příkazy
+## Změny v architektuře
 
-### Git:
-```bash
-git log --oneline -10              # Poslední commity
-git diff                          # Změny
-git checkout -b feature/nova-vec  # Nová branch
-git stash                         # Odložit změny
-git stash pop                     # Vrátit změny
-```
+### Původní verze (Next.js)
+- Framework: Next.js 16
+- Styling: Tailwind CSS 4
+- node_modules: ~425 MB
+- Build: několik MB
 
-### NPM:
-```bash
-npm outdated                      # Zastaralé packages
-npm audit                         # Security issues
-npm audit fix                     # Opravit security issues
-du -sh node_modules              # Velikost node_modules
-```
-
-### Vite:
-```bash
-npx vite --debug                  # Debug mode
-npx vite build --mode production # Produkční build
-npx vite preview --port 4173     # Preview na jiném portu
-```
+### Nová verze (Vite)
+- Framework: Vite 5 + React 19
+- Styling: Vanilla CSS
+- node_modules: ~66 MB (85% menší)
+- Build: ~304 KB (97% menší)
+- Build čas: ~2s (80% rychlejší)
 
 ---
 
-## 📝 Changelog
+## Testování
 
-### 2025-10-23 - v2.0 (Vite + History)
-**Major Update:**
-- ✅ Migrace z Next.js na Vite
-- ✅ Persistent history tracking v localStorage
-- ✅ Smart detekce nových otázek
-- ✅ Progress tracking a statistiky
-- ✅ Export/Import historie
-- ✅ Modal při vyčerpání otázek
-- ✅ Bundle size: 90% menší (304 KB)
-- ✅ Build čas: 60% rychlejší (~2s)
+### Funkční testy provedeny:
+✅ Disclaimer modal - zobrazení při prvním načtení
+✅ Disclaimer modal - neuložení při refreshi
+✅ Progress counter - zobrazení u zodpovězených kategorií
+✅ Progress counter - správné počítání (4/209 = 2%)
+✅ Progress counter - vizuální progress bar
+✅ LocalStorage - ukládání pokroku
+✅ LocalStorage - načítání pokroku po refreshi
+✅ Verze v patičce - zobrazení na hlavní obrazovce
+✅ Všechny 3 režimy - funkční s novými features
+✅ Production build - úspěšný build bez chyb
 
-**Git tags:** `milestone-3`
-**Commits:** 4 (včetně Vercel fix)
-
-### 2025-10-22 - v1.1 (Question Updates)
-- Rozšíření otázek v fears.ts (+15)
-- Rozšíření otázek v future.ts (+21)
-- Celkem 2,227 otázek
-
-### 2025-10-20 - v1.0 (Initial Release)
-- Základní Next.js aplikace
-- 11 kategorií, ~2,141 otázek
-- 3 režimy zobrazování
-- Tailwind CSS styling
+### Browser kompatibilita
+- Testováno v Chrome/Chromium
+- localStorage API (podporováno všemi moderními prohlížeči)
+- React 19 (moderní prohlížeče)
 
 ---
 
-## 🎯 Současné priority (doporučené)
+## Poznámky pro další vývoj
 
-### Nejbližší kroky:
-1. **Dark Mode** - Rychlé, viditelné zlepšení UX
-2. **Keyboard Shortcuts** - Pro power users
-3. **Sdílení otázek** - Virální potenciál
+### Doporučení:
+1. Zvážit přidání tlačítka "Reset pokroku" do nastavení
+2. Monitorovat velikost localStorage (limit ~5-10 MB)
+3. Případně implementovat export/import pro zálohu pokroku
+4. Zvážit přidání verze dat pro budoucí migrace
 
-### Dlouhodobě:
-- Backend + Auth pro sync mezi zařízeními
-- Tematické kolekce pro specifické use-cases
-- Komunitní funkce (user-generated content)
-
----
-
-## 📞 Kontakt & Odkazy
-
-**Repository:** https://github.com/MrInfernal/konverzacni-napadnik.git
-**Live URL:** [Vercel deployment URL zde]
-**Documentation:** README.md, MIGRATION_SUMMARY.md
-
-### Vercel:
-- Dashboard: https://vercel.com/dashboard
-- Projekt: konverzacni-napadnik
-- Auto-deploy: main branch → produkce
-
-### Užitečná dokumentace:
-- Vite: https://vitejs.dev/
-- React 19: https://react.dev/
-- TypeScript: https://www.typescriptlang.org/
-- Vercel: https://vercel.com/docs
+### Známé limitace:
+- LocalStorage se čistí při vymazání dat prohlížeče
+- Žádná synchronizace mezi zařízeními
+- Maximální limit localStorage (~5MB v některých prohlížečích)
 
 ---
 
-## ✨ Finální poznámky
-
-### Co funguje skvěle:
-- ⚡ Rychlost buildu a načítání
-- 💾 Persistence historie
-- 🎨 Čisté, moderní UI
-- 📱 Responsive design
-- 🔄 Automatický deployment
-
-### Co by se dalo vylepšit:
-- 🌙 Chybí dark mode
-- ⌨️ Žádné keyboard shortcuts
-- 🔗 Není možnost sdílení
-- 📊 Žádné pokročilé statistiky
-- 🌍 Pouze čeština
-
-### Testování:
-```bash
-# Otestovat před commitem:
-npm run build        # Musí projít bez chyb
-npm run preview      # Otestovat produkční build
-```
-
-### Před pushem na GitHub:
-1. ✅ Build prošel bez chyb
-2. ✅ Otestováno v prohlížeči
-3. ✅ Commit message je popisná
-4. ✅ Žádné console.log v kódu
-5. ✅ Žádné TODO komentáře
+## Autor změn
+**Datum:** 23. října 2025
+**Verzе:** 1.0.0 (Vite)
+**Status:** Experimentální - připraveno k testování
 
 ---
 
-**Hodně štěstí s dalším vývojem! 🚀**
+## Git repozitář
+Inicializováno: 23.10.2025
+Branch: master (default)
 
-**Vytvořeno Claude Code - 2025-10-23**
-
+### První commit obsahuje:
+- Kompletní Vite aplikace
+- Všechny nové funkce (progress, disclaimer, verze)
+- LocalStorage persistence
+- Production build v `dist/`
+- Dokumentace v README.md a CONTINUE.md
