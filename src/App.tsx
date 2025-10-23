@@ -141,7 +141,33 @@ export default function App() {
           </div>
           <button
             onClick={handleDisclaimerClose}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-6 px-10 rounded-2xl font-bold text-2xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-2xl hover:shadow-purple-500/50 hover:scale-105 active:scale-95 border-4 border-white/20"
+            style={{
+              background: 'linear-gradient(to right, #9333ea, #ec4899)',
+              width: '100%',
+              color: 'white',
+              padding: '1.5rem 2.5rem',
+              borderRadius: '1rem',
+              fontWeight: 'bold',
+              fontSize: '1.5rem',
+              border: '4px solid rgba(255, 255, 255, 0.2)',
+              cursor: 'pointer',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(168, 85, 247, 0.5)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)';
+            }}
+            onMouseDown={(e) => {
+              e.currentTarget.style.transform = 'scale(0.95)';
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
           >
             ✓ Rozumím, pokračovat do aplikace →
           </button>
