@@ -141,9 +141,9 @@ export default function App() {
           </div>
           <button
             onClick={handleDisclaimerClose}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-8 rounded-full font-bold text-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg"
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-6 px-10 rounded-2xl font-bold text-2xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-2xl hover:shadow-purple-500/50 hover:scale-105 active:scale-95 border-4 border-white/20"
           >
-            Rozumím, pokračovat →
+            ✓ Rozumím, pokračovat do aplikace →
           </button>
         </div>
       </div>

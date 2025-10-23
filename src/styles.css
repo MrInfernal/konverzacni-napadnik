@@ -718,3 +718,39 @@ button:hover.hover\:bg-slate-100 {
 .hover\:bg-slate-300:hover {
   background-color: #cbd5e1;
 }
+
+/* Additional utility classes for disclaimer modal */
+.border-4 {
+  border-width: 4px;
+}
+
+.border-white\/20 {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.py-6 {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+
+.px-10 {
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+.hover\:scale-105:hover {
+  transform: scale(1.05);
+}
+
+.active\:scale-95:active {
+  transform: scale(0.95);
+}
+
+.hover\:shadow-purple-500\/50:hover {
+  box-shadow: 0 25px 50px -12px rgba(168, 85, 247, 0.5);
+}
