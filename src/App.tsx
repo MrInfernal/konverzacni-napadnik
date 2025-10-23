@@ -13,15 +13,7 @@ export default function App() {
     const saved = localStorage.getItem('usedQuestions');
     return saved ? new Set(JSON.parse(saved)) : new Set();
   });
-  const [showDisclaimer, setShowDisclaimer] = useState<boolean>(false);
-
-  // Check if disclaimer was already shown
-  useEffect(() => {
-    const disclaimerShown = localStorage.getItem('disclaimerShown');
-    if (!disclaimerShown) {
-      setShowDisclaimer(true);
-    }
-  }, []);
+  const [showDisclaimer, setShowDisclaimer] = useState<boolean>(true);
 
   // Save progress to localStorage whenever it changes
   useEffect(() => {
@@ -29,7 +21,6 @@ export default function App() {
   }, [usedQuestions]);
 
   const handleDisclaimerClose = () => {
-    localStorage.setItem('disclaimerShown', 'true');
     setShowDisclaimer(false);
   };
 
