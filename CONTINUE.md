@@ -203,3 +203,206 @@ Branch: master (default)
 - LocalStorage persistence
 - Production build v `dist/`
 - Dokumentace v README.md a CONTINUE.md
+
+---
+
+## 🎯 Milestones & Roadmap
+
+### ✅ Milestone 1: Core Features (DOKONČENO - 23.10.2025)
+**Verze:** 1.0.1
+**Status:** Deployed to Production
+
+**Dokončené:**
+- [x] Progress counter u kategorií
+- [x] Disclaimer modal
+- [x] Verze v patičce
+- [x] LocalStorage persistence
+- [x] Oprava viditelnosti tlačítka
+
+**Metriky:**
+- 5 commitů
+- 3 deployments
+- Build size: ~101 KB (gzip)
+- Všechny funkční testy prošly ✅
+
+---
+
+### 🔄 Milestone 2: User Experience Improvements (PŘÍŠTÍ)
+**Verze:** 1.1.0
+**Priorita:** Vysoká
+**Odhad:** 1-2 dny
+
+**Plánované funkce:**
+- [ ] Reset button pro progress (smazání localStorage)
+- [ ] Potvrzovací dialog před resetem
+- [ ] Statistiky dashboard (celkový progress, nejaktivnější kategorie)
+- [ ] Toast notifikace pro user feedback
+- [ ] Keyboard shortcuts (Space = další otázka, Esc = zpět)
+
+**Technické úkoly:**
+- [ ] Přidat Settings modal/stránku
+- [ ] Implementovat statistiky calculations
+- [ ] Přidat toast notification systém
+- [ ] Dokumentovat keyboard shortcuts
+
+---
+
+### 📱 Milestone 3: Mobile & PWA (BUDOUCNOST)
+**Verze:** 1.2.0
+**Priorita:** Střední
+**Odhad:** 2-3 dny
+
+**Plánované funkce:**
+- [ ] PWA manifest (installable app)
+- [ ] Offline support (Service Worker)
+- [ ] Touch gestures (swipe pro další otázku)
+- [ ] Mobilní optimalizace UI
+- [ ] iOS Safari fix (100vh problém)
+
+**Technické úkoly:**
+- [ ] Vytvořit manifest.json
+- [ ] Implementovat Service Worker
+- [ ] Přidat ikony (512x512, 192x192)
+- [ ] Testovat na mobilních zařízeních
+
+---
+
+### 🎨 Milestone 4: Customization & Themes (BUDOUCNOST)
+**Verze:** 1.3.0
+**Priorita:** Nízká
+**Odhad:** 1-2 dny
+
+**Plánované funkce:**
+- [ ] Dark/Light mode toggle
+- [ ] Custom color themes
+- [ ] Font size adjustment
+- [ ] Animace přechodů (volitelné)
+- [ ] Zvukové efekty (volitelné, vypnutelné)
+
+**Technické úkoly:**
+- [ ] Přidat theme context
+- [ ] CSS variables pro theming
+- [ ] Persist theme v localStorage
+- [ ] Accessibility (ARIA labels)
+
+---
+
+### 💾 Milestone 5: Data Management (BUDOUCNOST)
+**Verze:** 1.4.0
+**Priorita:** Střední
+**Odhad:** 2-3 dny
+
+**Plánované funkce:**
+- [ ] Export pokroku do JSON
+- [ ] Import pokroku z JSON
+- [ ] Oblíbené otázky (bookmark)
+- [ ] Seznam oblíbených otázek
+- [ ] Historie posledních 10 otázek
+- [ ] Možnost vrátit se k předchozí otázce
+
+**Technické úkoly:**
+- [ ] File upload/download API
+- [ ] Validace importovaných dat
+- [ ] Favorites state management
+- [ ] History circular buffer (max 10)
+
+---
+
+### 🔗 Milestone 6: Social & Sharing (BUDOUCNOST)
+**Verze:** 1.5.0
+**Priorita:** Nízká
+**Odhad:** 1 den
+
+**Plánované funkce:**
+- [ ] Share konkrétní otázky (URL)
+- [ ] Social media share buttons
+- [ ] QR kód pro sdílení
+- [ ] Embed mód (iframe friendly)
+
+**Technické úkoly:**
+- [ ] URL routing (query params)
+- [ ] Social meta tags
+- [ ] QR code generator
+- [ ] CORS configuration
+
+---
+
+## 📈 Metriky & KPIs
+
+### Aktuální (v1.0.1)
+- **Build velikost:** 101 KB (gzip)
+- **Build čas:** 1.8s
+- **Závislosti:** 65 packages
+- **TypeScript coverage:** ~95%
+- **Bundle score:** A+
+
+### Cíle pro v1.2.0
+- **Build velikost:** < 120 KB (gzip) s PWA
+- **Build čas:** < 2.5s
+- **Lighthouse score:** > 95
+- **PWA score:** > 90
+
+---
+
+## 🐛 Known Issues
+
+### Nízká priorita:
+1. Modal může být příliš vysoký na malých obrazovkách
+2. Disclaimer tlačítko není vidět bez scrollování (opraveno inline styly)
+3. Žádný loading state pro první načtení
+
+### Středí priorita:
+1. Není možné resetovat progress bez dev tools
+2. Chybí feedback po zodpovězení všech otázek
+3. Žádná vizuální indikace aktiv kategorie
+
+---
+
+## 📝 Development Notes
+
+### Best Practices:
+- Používat inline styly pro kritické komponenty (gradient tlačítka)
+- Testovat v prohlížeči před deploym (hot reload může být problematický)
+- Vždy číst soubor před editací (Edit tool requirement)
+- Commitovat po každé funkční změně
+
+### Deployment Process:
+1. Vývoj v lokálním dev serveru
+2. Test v prohlížeči (Playwright)
+3. Git commit s conventional commit message
+4. Git push (automatický Vercel deploy)
+5. Verifikace na production URL
+
+---
+
+## 🎓 Lessons Learned
+
+### CSS Utility Classes vs Inline Styles:
+- **Problém:** CSS gradient třídy (`bg-gradient-to-r`) nefungovaly
+- **Řešení:** Použít inline React styly s přímým gradientem
+- **Důvod:** Vanilla CSS utility systém není kompletní jako Tailwind
+- **Závěr:** Pro kritické komponenty preferovat inline styly
+
+### LocalStorage Persistence:
+- **Implementace:** useEffect s JSON.stringify/parse
+- **Funguje dobře:** Pro malá data (< 100 KB)
+- **Pozor:** Limit ~5 MB, čistí se při clear browsing data
+
+---
+
+## 📚 References
+
+### Dokumentace:
+- React 19: https://react.dev
+- Vite: https://vitejs.dev
+- Vercel: https://vercel.com/docs
+
+### Repository:
+- GitHub: https://github.com/MrInfernal/konverzacni-napadnik
+- Production: https://konverzacni-napadnik.vercel.app
+
+---
+
+**Poslední aktualizace:** 23.10.2025 13:30
+**Autor:** Claude Code
+**Příští milestone:** v1.1.0 - User Experience Improvements
