@@ -219,7 +219,7 @@ export default function App() {
           </div>
 
           <div className="text-center mt-12 text-slate-400 text-sm">
-            <p>Verze 1.0.0 (Vite) • Experimentální</p>
+            <p>Verze 1.1.0 (Vite) • Experimentální</p>
           </div>
         </div>
       </div>
@@ -253,7 +253,6 @@ export default function App() {
               const isSelected = selectedCategories.find(c => c.id === category.id);
               const answeredCount = getAnsweredQuestionsCount(category.id);
               const totalCount = category.questions.length;
-              const progressPercent = totalCount > 0 ? Math.round((answeredCount / totalCount) * 100) : 0;
 
               return (
                 <button
@@ -274,14 +273,13 @@ export default function App() {
                     </p>
                     {answeredCount > 0 && (
                       <div className="space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <span>Zodpovězeno: {answeredCount}/{totalCount}</span>
-                          <span>{progressPercent}%</span>
-                        </div>
+                        <p className="text-xs">
+                          Zodpovězeno: {answeredCount} / {totalCount}
+                        </p>
                         <div className="w-full bg-white/20 rounded-full h-1.5">
                           <div
                             className="bg-white rounded-full h-1.5 transition-all duration-300"
-                            style={{ width: `${progressPercent}%` }}
+                            style={{ width: `${(answeredCount / totalCount) * 100}%` }}
                           />
                         </div>
                       </div>
@@ -329,7 +327,6 @@ export default function App() {
             {categories.map((category) => {
               const answeredCount = getAnsweredQuestionsCount(category.id);
               const totalCount = category.questions.length;
-              const progressPercent = totalCount > 0 ? Math.round((answeredCount / totalCount) * 100) : 0;
 
               return (
                 <button
@@ -345,14 +342,13 @@ export default function App() {
                     </p>
                     {answeredCount > 0 && (
                       <div className="space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <span>Zodpovězeno: {answeredCount}/{totalCount}</span>
-                          <span>{progressPercent}%</span>
-                        </div>
+                        <p className="text-xs">
+                          Zodpovězeno: {answeredCount} / {totalCount}
+                        </p>
                         <div className="w-full bg-white/20 rounded-full h-1.5">
                           <div
                             className="bg-white rounded-full h-1.5 transition-all duration-300"
-                            style={{ width: `${progressPercent}%` }}
+                            style={{ width: `${(answeredCount / totalCount) * 100}%` }}
                           />
                         </div>
                       </div>
