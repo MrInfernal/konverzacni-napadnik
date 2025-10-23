@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { categories, Category } from '@/data';
+import { useQuestionHistory } from '@/hooks/useQuestionHistory';
+import HistoryControls from '@/components/HistoryControls';
 
 type Mode = 'menu' | 'random-mix' | 'multi-select' | 'single-category';
 type QuestionWithCategory = { question: string; category: Category; questionIndex: number };
@@ -9,6 +11,10 @@ export default function App() {
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<QuestionWithCategory | null>(null);
   const [usedQuestions, setUsedQuestions] = useState<Set<string>>(new Set());
+  const [showAllSeenModal, setShowAllSeenModal] = useState(false);
+
+  // Question history management
+  const history = useQuestionHistory(categories);
 
   const handleModeSelect = (selectedMode: Mode) => {
     setMode(selectedMode);
@@ -40,28 +46,36 @@ export default function App() {
   const getNextQuestion = () => {
     if (selectedCategories.length === 0) return;
 
-    const allQuestions: QuestionWithCategory[] = [];
-    selectedCategories.forEach(cat => {
-      cat.questions.forEach((q, idx) => {
-        allQuestions.push({ question: q, category: cat, questionIndex: idx });
-      });
+    // Get unseen questions from persistent history
+    const unseenQuestions = history.getUnseenQuestions(selectedCategories);
+
+    // If all questions seen, show modal
+    if (unseenQuestions.length === 0) {
+      setShowAllSeenModal(true);
+      return;
+    }
+
+    // Filter out questions used in current session
+    const availableQuestions = unseenQuestions.filter(q => {
+      const key = `${q.category.id}-${q.questionIndex}`;
+      return !usedQuestions.has(key);
     });
 
-    const totalQuestions = allQuestions.length;
-    if (usedQuestions.size >= totalQuestions) {
+    // If no questions available in current session, reset session
+    const questionsToUse = availableQuestions.length > 0 ? availableQuestions : unseenQuestions;
+
+    if (availableQuestions.length === 0) {
       setUsedQuestions(new Set());
     }
 
-    let nextQuestion: QuestionWithCategory;
-    let questionKey: string;
+    // Pick random question
+    const randomIndex = Math.floor(Math.random() * questionsToUse.length);
+    const nextQuestion = questionsToUse[randomIndex];
+    const questionKey = `${nextQuestion.category.id}-${nextQuestion.questionIndex}`;
 
-    do {
-      const randomIndex = Math.floor(Math.random() * totalQuestions);
-      nextQuestion = allQuestions[randomIndex];
-      questionKey = `${nextQuestion.category.id}-${nextQuestion.questionIndex}`;
-    } while (usedQuestions.has(questionKey) && usedQuestions.size < totalQuestions);
-
+    // Mark as used in session and persistent history
     setUsedQuestions(prev => new Set([...prev, questionKey]));
+    history.markQuestionAsSeen(nextQuestion.category.id, nextQuestion.questionIndex);
     setCurrentQuestion(nextQuestion);
   };
 
@@ -86,6 +100,25 @@ export default function App() {
 
   // Main menu - mode selection
   if (mode === 'menu') {
+    const stats = history.getStats();
+
+    const handleExport = () => {
+      const json = history.exportHistory();
+      navigator.clipboard.writeText(json);
+    };
+
+    const handleImport = () => {
+      const json = prompt('Vložte JSON historii:');
+      if (json) {
+        const success = history.importHistory(json);
+        if (success) {
+          alert('Historie byla úspěšně importována!');
+        } else {
+          alert('Chyba při importu historie. Zkontrolujte formát.');
+        }
+      }
+    };
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8 flex items-center justify-center">
         <div className="max-w-4xl mx-auto">
@@ -96,6 +129,17 @@ export default function App() {
             <p className="text-xl text-slate-300">
               Vyberte režim zobrazování otázek
             </p>
+          </div>
+
+          {/* History Controls */}
+          <div className="mb-8">
+            <HistoryControls
+              stats={stats}
+              onReset={history.resetHistory}
+              onExport={handleExport}
+              onImport={handleImport}
+              onDismissNewQuestions={history.dismissNewQuestionsNotification}
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -285,6 +329,47 @@ export default function App() {
             Další otázka →
           </button>
         </div>
+
+        {/* All questions seen modal */}
+        {showAllSeenModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white rounded-3xl p-8 max-w-md mx-4 shadow-2xl">
+              <div className="text-center">
+                <div className="text-6xl mb-4">🎉</div>
+                <h2 className="text-3xl font-bold text-purple-900 mb-4">
+                  Gratuluji!
+                </h2>
+                <p className="text-lg text-slate-700 mb-6">
+                  Viděl/a jste všechny otázky z vybraných kategorií!
+                  <br />
+                  Chcete začít znovu?
+                </p>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => {
+                      history.resetHistory();
+                      setShowAllSeenModal(false);
+                      setUsedQuestions(new Set());
+                      getNextQuestion();
+                    }}
+                    className="flex-1 bg-purple-600 text-white py-3 px-6 rounded-full font-bold hover:bg-purple-700 transition-colors"
+                  >
+                    ✅ Resetovat a pokračovat
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowAllSeenModal(false);
+                      handleBack();
+                    }}
+                    className="flex-1 bg-slate-200 text-slate-700 py-3 px-6 rounded-full font-bold hover:bg-slate-300 transition-colors"
+                  >
+                    ❌ Zpět na menu
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
