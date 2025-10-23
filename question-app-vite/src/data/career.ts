@@ -70,7 +70,7 @@ export const career = [
   "Co ti pomáhá vyrovnávat se s nudou?",
   "Jaké máš zkušenosti s prací pod tlakem?",
   "Kdy ses naposledy cítil/a, že ti někdo v práci opravdu pomohl?",
-  "Raději bys měl/a kancelář plnou rostlin, nebo robotického asistenta", co se pořád ptá, jak se máš?",
+  "Raději bys měl/a kancelář plnou rostlin, nebo robotického asistenta, co se pořád ptá, jak se máš?",
   "Co tě naučila práce o tobě samotném/é?",
   "Jaký nejzvláštnější úkol jsi kdy dostal/a?",
   "Kdy ses naposledy cítil/a, že ti práce přerůstá přes hlavu?",
